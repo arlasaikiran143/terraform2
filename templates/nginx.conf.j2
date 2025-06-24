@@ -8,7 +8,6 @@ http {
     sendfile        on;
     keepalive_timeout  65;
 
-    # NGINX default web server
     server {
         listen 80;
         server_name _;
@@ -16,7 +15,7 @@ http {
         index index.html;
     }
 
-    # Reverse proxy Netdata traffic on 19999 to backend
+    # 🔁 Reverse proxy Netdata
     upstream backend_netdata {
         server {{ hostvars['u21.local']['ansible_host'] }}:19999;
     }
