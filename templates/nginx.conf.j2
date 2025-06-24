@@ -11,21 +11,24 @@ http {
     sendfile        on;
     keepalive_timeout  65;
 
-    upstream backend_netdata {
-        server 54.226.229.140:19999;  # ✅ Backend EC2 public IP and port
-    }
-
+    # Default root page (served by NGINX)
     server {
         listen 80;
         server_name _;
 
         location / {
-            proxy_pass http://backend_netdata;
+            root /usr/share/nginx/html;
+            index index.html;
+        }
+
+        # 🔁 Reverse proxy from /netdata to backend Netdata
+        location /netdata/ {
+            proxy_pass http://54.226.229.140:19999/;  # Make sure to add trailing slash!
             proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
             proxy_set_header Host $host;
-            proxy_cache_bypass $http_upgrade;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
         }
     }
 }
