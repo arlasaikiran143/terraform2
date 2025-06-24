@@ -1,25 +1,24 @@
 worker_processes 1;
+
 events {
     worker_connections 1024;
 }
+
 http {
     include       mime.types;
     default_type  application/octet-stream;
+
     sendfile        on;
     keepalive_timeout  65;
-    # :white_tick: Server 1: NGINX default (port 80)
+
+    upstream backend_netdata {
+        server 54.226.229.140:19999;  # ✅ Backend EC2 public IP and port
+    }
+
     server {
         listen 80;
         server_name _;
-        root /usr/share/nginx/html;
-        index index.html;
-    }
-    # :white_tick: Server 2: Reverse proxy (port 19999 to backend)
-    upstream backend_netdata {
-        server 54.147.173.18:19999;  # backend IP
-    }
-    server {
-        listen 19999;
+
         location / {
             proxy_pass http://backend_netdata;
             proxy_http_version 1.1;
